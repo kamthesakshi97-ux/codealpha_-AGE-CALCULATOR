@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to ensure the font is applied everywhere */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Hide the number input arrows */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main Container -->
+    <div class="bg-white p-8 sm:p-12 rounded-2xl shadow-xl w-full max-w-sm sm:max-w-md">
+
+        <!-- Title -->
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8 text-center tracking-tight">
+            Age Calculator
+        </h1>
+
+        <!-- Input Form -->
+        <div class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <!-- Day Input -->
+                <div class="flex-1 w-full">
+                    <label for="day" class="block text-sm font-semibold text-gray-600 mb-2">Day</label>
+                    <input type="number" id="day" placeholder="DD" min="1" max="31" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                </div>
+
+                <!-- Month Input -->
+                <div class="flex-1 w-full">
+                    <label for="month" class="block text-sm font-semibold text-gray-600 mb-2">Month</label>
+                    <input type="number" id="month" placeholder="MM" min="1" max="12" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                </div>
+
+                <!-- Year Input -->
+                <div class="flex-1 w-full">
+                    <label for="year" class="block text-sm font-semibold text-gray-600 mb-2">Year</label>
+                    <input type="number" id="year" placeholder="YYYY" min="1900" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                </div>
+            </div>
+
+            <!-- Error Message Display -->
+            <p id="error-message" class="text-sm font-medium text-red-500 text-center transition-all duration-300 h-6">
+            </p>
+
+            <!-- Calculate Button -->
+            <button id="calculate-btn" class="w-full py-3 px-6 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 transform active:scale-95">
+                Calculate Age
+            </button>
+        </div>
+
+        <!-- Result Display -->
+        <div class="mt-8 text-center">
+            <p id="result" class="text-xl font-bold text-gray-800 break-words"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to all necessary DOM elements
+            const dayInput = document.getElementById('day');
+            const monthInput = document.getElementById('month');
+            const yearInput = document.getElementById('year');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultDisplay = document.getElementById('result');
+            const errorMessage = document.getElementById('error-message');
+
+            /**
+             * Performs input validation and calculates the age.
+             */
+            function calculateAge() {
+                // Clear previous messages
+                errorMessage.textContent = '';
+                resultDisplay.textContent = '';
+
+                // Get input values and convert them to numbers
+                const day = parseInt(dayInput.value, 10);
+                const month = parseInt(monthInput.value, 10);
+                const year = parseInt(yearInput.value, 10);
+
+                // Basic validation checks
+                if (isNaN(day) || isNaN(month) || isNaN(year) || day <= 0 || month <= 0 || year <= 0) {
+                    errorMessage.textContent = 'Please enter a valid date.';
+                    return;
+                }
+
+                // Create a Date object from the user's input
+                const birthDate = new Date(year, month - 1, day); // Month is 0-indexed in JS Date object
+
+                // Check for invalid dates (e.g., February 30th)
+                if (
+                    birthDate.getFullYear() !== year ||
+                    birthDate.getMonth() !== month - 1 ||
+                    birthDate.getDate() !== day
+                ) {
+                    errorMessage.textContent = 'Invalid date. Please check the day and month.';
+                    return;
+                }
+
+                const today = new Date();
+
+                // Check if the birth date is in the future
+                if (birthDate > today) {
+                    errorMessage.textContent = 'Date of birth cannot be in the future.';
+                    return;
+                }
+
+                // Age calculation logic
+                let years = today.getFullYear() - birthDate.getFullYear();
+                let months = today.getMonth() - birthDate.getMonth();
+                let days = today.getDate() - birthDate.getDate();
+
+                // Adjust for months and days
+                if (days < 0) {
+                    months--;
+                    // Get the number of days in the previous month
+                    const prevMonthLastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+                    days += prevMonthLastDay.getDate();
+                }
+
+                if (months < 0) {
+                    years--;
+                    months += 12;
+                }
+
+                // Display the final result
+                resultDisplay.innerHTML = `Your age is: <br>
+                <span class="text-blue-600">${years}</span> years, 
+                <span class="text-blue-600">${months}</span> months, and 
+                <span class="text-blue-600">${days}</span> days.`;
+            }
+
+            // Add event listener to the button
+            calculateBtn.addEventListener('click', calculateAge);
+        });
+    </script>
+</body>
+</html>
